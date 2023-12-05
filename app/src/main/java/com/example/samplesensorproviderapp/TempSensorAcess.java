@@ -14,34 +14,29 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 
 import java.util.UUID;
 
-public class LightSensorAccess implements SensorEventListener {
+public class TempSensorAcess implements SensorEventListener {
+
     private SensorManager sensorManager;
-    private Sensor mLight;
+    private Sensor mTemperature;
     private TextView sensor_field;
 
-    public LightSensorAccess(SensorManager sm, TextView tv){
+    public TempSensorAcess(SensorManager sm, TextView tv) {
         sensorManager = sm;
         sensor_field = tv;
-        mLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        sensorManager.registerListener(this, mLight, SensorManager.SENSOR_DELAY_NORMAL);
-    }
-    @Override
-    public final void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Do something here if sensor accuracy changes.
+        mTemperature = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+        sensorManager.registerListener(this, mTemperature, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
-    public final void onSensorChanged(SensorEvent event) {
-        // The light sensor returns a single value.
-        float lux = event.values[0];
-        // Show luminosity value on the text field
-        sensor_field.setText(String.valueOf(lux));
-        publishMessage(String.valueOf(lux));
+    public void onSensorChanged(SensorEvent event) {
+        float temp = event.values[0];
+        sensor_field.setText(String.valueOf(temp));
+        publishMessage(String.valueOf(temp));
     }
 
     @Override
-    protected void finalize() {
-        sensorManager.unregisterListener(this);
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     private void publishMessage(String value) {
@@ -52,7 +47,7 @@ public class LightSensorAccess implements SensorEventListener {
 
         client.connect();
         client.publishWith()
-                .topic("luminosity")
+                .topic("temp")
                 .qos(MqttQos.AT_LEAST_ONCE)
                 .payload(value.getBytes())
                 .send();
